@@ -56,10 +56,10 @@ async def on_ready():
         
         if not playing.is_running():
             playing.start(guild)
-        #await asyncio.sleep(60)
+        await asyncio.sleep(60)
         if not updateData.is_running():
             updateData.start(guild)
-@tasks.loop(seconds=1)
+@tasks.loop(seconds=60)
 async def updateData(guild):
     global RESULT,THREADS
     THREADS=[]
@@ -116,7 +116,6 @@ async def playing(guild):
     print('playing is running')
     global RESULT,THREADS
     for thread in THREADS:
-        try:
             username=thread['username']
             url='https://main.v2.beatstars.com/stats/track_play'
             headers={
@@ -134,7 +133,5 @@ async def playing(guild):
                     await thread.lastMsg.edit(content=f"``FOLLOWERS``== **{js['response']['data']['stats']['followers']}** | ``PLAYS``== **{js['response']['data']['stats']['plays']}** | ``TRACKS``== **{js['response']['data']['stats']['tracks']}**")
                 except:
                     pass
-        except:
-            pass
 client.run(os.environ.get('botToken'))
 
