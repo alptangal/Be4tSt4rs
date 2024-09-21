@@ -99,7 +99,7 @@ async def updateData(guild):
                         pass
             if not isset:
                 rs=await RESULT['threadsCh'].create_thread(name=user,content=row)
-                req=requests.get('https://main.v2.beatstars.com/musician?permalink='+user.split('/')[-1]+'&fields=profile,user_contents,stats,bulk_deals,social_networks')
+                req=requests.get('https://main.v2.beatstars.com/musician?permalink='+user+'&fields=profile,user_contents,stats,bulk_deals,social_networks')
                 if req.status_code<400:
                     js=req.json()
                     await rs.thread.send(content=f"``FOLLOWERS``== **{js['response']['data']['stats']['followers']}** | ``PLAYS``== **{js['response']['data']['stats']['plays']}** | ``TRACKS``== **{js['response']['data']['stats']['tracks']}**")
