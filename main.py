@@ -34,9 +34,8 @@ async def on_ready():
         guild = client.get_guild(GUILD_ID)
         RESULT=await getBasic(guild)
         for thread in RESULT['threadsCh'].threads:
-            msgs=[msg async for msg in thread.history(oldest_first=True)]
             url='https://core.prod.beatstars.net/graphql?op=getMemberProfileByUsername'
-            data={"operationName":"getMemberProfileByUsername","variables":{"username":msgs[0].content.split('/')[-1]},"query":"query getMemberProfileByUsername($username: String!) {\n  profileByUsername(username: $username) {\n    ...memberProfileInfo\n    __typename\n  }\n}\n\nfragment memberProfileInfo on Profile {\n  ...partialProfileInfo\n  location\n  bio\n  tags\n  badges\n  achievements\n  profileInventoryStatsWithUserContents {\n    ...mpGlobalMemberProfileUserContentStatsDefinition\n    __typename\n  }\n  socialInteractions(actions: [LIKE, FOLLOW, REPOST])\n  avatar {\n    assetId\n    fitInUrl(width: 200, height: 200)\n    sizes {\n      small\n      medium\n      large\n      mini\n      __typename\n    }\n    __typename\n  }\n  socialLinks {\n    link\n    network\n    profileName\n    __typename\n  }\n  activities {\n    follow\n    play\n    __typename\n  }\n  __typename\n}\n\nfragment partialProfileInfo on Profile {\n  displayName\n  username\n  memberId\n  location\n  v2Id\n  avatar {\n    assetId\n    sizes {\n      mini\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment mpGlobalMemberProfileUserContentStatsDefinition on ProfileInventoryStats {\n  playlists\n  __typename\n}\n"}
+            data={"operationName":"getMemberProfileByUsername","variables":{"username":thread.name.split('@')[0]},"query":"query getMemberProfileByUsername($username: String!) {\n  profileByUsername(username: $username) {\n    ...memberProfileInfo\n    __typename\n  }\n}\n\nfragment memberProfileInfo on Profile {\n  ...partialProfileInfo\n  location\n  bio\n  tags\n  badges\n  achievements\n  profileInventoryStatsWithUserContents {\n    ...mpGlobalMemberProfileUserContentStatsDefinition\n    __typename\n  }\n  socialInteractions(actions: [LIKE, FOLLOW, REPOST])\n  avatar {\n    assetId\n    fitInUrl(width: 200, height: 200)\n    sizes {\n      small\n      medium\n      large\n      mini\n      __typename\n    }\n    __typename\n  }\n  socialLinks {\n    link\n    network\n    profileName\n    __typename\n  }\n  activities {\n    follow\n    play\n    __typename\n  }\n  __typename\n}\n\nfragment partialProfileInfo on Profile {\n  displayName\n  username\n  memberId\n  location\n  v2Id\n  avatar {\n    assetId\n    sizes {\n      mini\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment mpGlobalMemberProfileUserContentStatsDefinition on ProfileInventoryStats {\n  playlists\n  __typename\n}\n"}
             req=requests.post(url,json=data)
             memberId=req.json()['data']['profileByUsername']['memberId']
             url='https://core.prod.beatstars.net/graphql?op=getProfileContentTrackList'
@@ -48,17 +47,16 @@ async def on_ready():
             for item in js['data']['profileTracks']['content']:
                 songs.append(item['v2Id'])
             THREADS.append({
-                'username':msgs[0].content.split('/')[-1],
+                'username':thread.name,
                 'memberId':memberId,
-                'lastMsg':msgs[-1],
                 'songs':songs
             })
         
         if not playing.is_running():
             playing.start(guild)
-        await asyncio.sleep(60)
+        '''await asyncio.sleep(60)
         if not updateData.is_running():
-            updateData.start(guild)
+            updateData.start(guild)'''
 @tasks.loop(seconds=60)
 async def updateData(guild):
     global RESULT,THREADS
@@ -126,12 +124,5 @@ async def playing(guild):
                 req=requests.post(url,headers=headers,json=data)
                 if req.status_code<400:
                     print('Increament 1 Played')
-            if datetime.now().hour==12 and datetime.now().minute==0:
-                req=requests.get('https://main.v2.beatstars.com/musician?permalink='+username+'&fields=profile,user_contents,stats,bulk_deals,social_networks')
-                js=req.json()
-                try:
-                    await thread.lastMsg.edit(content=f"``FOLLOWERS``== **{js['response']['data']['stats']['followers']}** | ``PLAYS``== **{js['response']['data']['stats']['plays']}** | ``TRACKS``== **{js['response']['data']['stats']['tracks']}**")
-                except:
-                    pass
 client.run(os.environ.get('botToken'))
 
