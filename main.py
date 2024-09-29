@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import json
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 
 GUILD_ID=1122707918177960047
